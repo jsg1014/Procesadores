@@ -90,3 +90,101 @@ NOMBRE [^ \t\r%{}\\]+
 				}
 <TIKZ>{ORDEN}|{ESCAPE}	;
 <TIKZ>[^\\%]+	;
+
+/* Verbatim: solo temina con \end{verbatim}*/
+
+<VERBATIM>{FIN_VERB}	{BEGIN(estado_previo);}
+<VERBATIM>[^\\]+"\\"	;
+
+
+<PRE>{ESPACIOS}+	;
+<PRE>{COMENTARIOS}	;
+<PRE>"["	{ prof= 0; BEGIN(OPCIONES)'}
+<PRE>"{"	{ if( siguiente == SIG_NOMBRE_PAQUETE || siguiente == SIG_NOMBRE_CLASE) 
+		  BEGIN(NOMBRE);
+		  else{
+			prof =0;
+			vis = VIS_VACIO;
+			BEGIN (MIEMBROS);	
+		  }
+		}
+<PRE>.	{yyless(0); BEGIN(TIKZ); /* entrada inesperada*/}
+
+
+
+<OPC>{COMENTARIOS}	;
+<OPC>{ESCAPE}		;
+<OPC>"{"	{ prof++;}
+<OPC>"}"	{ if(prof>0) prof--;}
+<OPC>"]"	{ if (prof== 0) BEGIN(PRE);}
+<OPC>[^\\%{}\]]+	;
+
+
+<NOMBRE>{ESPACIOS}+	;
+<NOMBRE>{ESCAPE}	;
+<NOMBRE>{NOMBRE}	{if(siguiente == SIG_NOMBRE_PAQUETE){
+				int l = long_uft8(yytext);
+				if(l > long_paquete){
+					long_paquete = l;
+					copiar(paquete_largo,yytext);
+				}
+			}else{
+				copiar(clase_actual,yytext);	
+			}	
+			}
+<NOMBRE>"}"		{ if(siguiente== SIG_NOMBRE_PAQUETE){
+				BEGIN(TIKZ);
+			else{
+				siguiente= SIG_ATRIBUTOS;
+				BEGIN(PRE);	
+				}
+			}
+<NOMBRE>.	;
+
+
+<MIEMBROS>{COMENTARIOS}	;
+<MIEMBROS>{ESPACIOS}+	;
+<MIEMBROS>"\\\\"	{ if(prof==0) cerrar_miembro(); else marcar(VIS_OTRA);}
+<MIEMBROS>"\\#"		{marcar(VIS_PROTEGIDA);}
+<MIEMBROS>"+"		{marcar(VIS_PUBLICA);}
+<MIEMBROS>"-"		{marcar(VIS_PRIVADA);}
+<MIEMBROS>"{"		{prof++; marcar(VIS_OTRA);}
+<MIEMBROS>"}"		{ if (prof>0){
+				prof--;
+			}else{
+				cerrar_meimbro();
+				if(siguiente== SIG_ATRIBUTOS){
+				siguiente = SIG_METODOS;
+				BEGIN(PRE);
+			}else{
+				cerrar_clase();
+				BEGIN(TIKZ);
+			}
+			}
+			}
+<MIEMBROS>{ORDEN}|{ESCAPE}	{marcar(VIS_OTRA); /* \{ \} \% \_ \textbf ... */}
+<MIEMBROS>[^\\%{}+\- \t\r\n]+	{marcar(VIS_OTRA); }
+<MIEMBROS>.			{marcar(VIS_OTRA);}
+
+%%
+
+static void copiar(char *dst, const char *src)
+{
+	strncpy(dst,src, MAXNOMBRE -1);
+	dst[MAXNOMBRE - 1] = '\0';
+}
+
+static void int long_utf8(const char *s){
+	int n = 0;
+	for(; *s; s++){
+	 if(((unsigned char)*s & 0xC0) != 0x80) n++;
+	}
+	return n;
+}
+
+static void marcar (int v)
+{
+	if(vis == VIS_VACIO) vis = v;
+	}
+
+}
