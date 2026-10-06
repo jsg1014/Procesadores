@@ -188,3 +188,52 @@ static void marcar (int v)
 	}
 
 }
+
+static void cerrar_miembro(void)
+{
+	if(vis!=VIS_VACIO){
+		if(siguiente == SIG_ATRIBUTOS) atributos++;
+		switch(vis){
+			case VIS_PUBLICA:	publicos++; break;
+			case VIS_PRIVADA:	privados++; break;
+			case VIS_PROTEGIDA: 	protegidos++; break;
+		}
+	}
+	vis = VIS_VACIO;
+}
+
+static void cerrar_clase()
+{
+	if (atributo_clase > atributo_max){
+
+	atributo_max = atributo_clase;
+	copiar(clase_max,clase_catual);
+	}
+}
+
+int main (int argc, char *argv[])
+{
+	if(argc >2){
+		fprintf(stderr,"Uso : %s [fichero]\n",argv[0]);
+		return EXIT_FAILURE;
+	}
+	if(argc== 2 && (yyin = fopen(argv[1],"r")) == NULL){
+		perror(argv[1]);
+		return EXIT_FAILURE;
+	}
+	yylex();
+	printf("Paquetes : %d (anidamientos maximo : %d)\n",num_paquetes,nivel_max);
+	printf("Miembros por visibilidad: publicos %d, privados %d, protegidos %d\n",publicos,privados,protegidos);
+	if(atrib_max >=0)
+		printf("Clases con mas atributos: %s (%d)\n", clase_max,atrib_max);
+	else
+		printf("Clases con mas atributos : ninguna \n");
+	
+	if(num_paquete >0)
+		printf ("Nombre de paquete mas largo: %s\n",paquete_largo);
+	else
+		printf ("Nombre de paquete mas largo: ninguno");
+	if(yyin != stdin) fclose(yyin);
+	return EXIT_SUCCESS;
+	}
+
