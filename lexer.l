@@ -1,6 +1,7 @@
 /*
  * Practica 1 (Flex): estadisticas de diagramas de clases TikZ-UML en un documento LaTeX.
- *
+ * Autor: Jairo Sanchez Gonzalez
+ * Fecha: 13/10/2026
  * Uso: ./tikzuml [fichero.tex]
  */
 /*
