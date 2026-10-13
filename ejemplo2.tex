@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{tikz-uml}
+% \usepackage{umlclass} <- no debe confundir
+
+\begin{document}
+
+\begin{tikzpicture}
+\begin{umlpackage}{tienda}
+    \begin{umlpackage}
+       [x=0,
+        y=0]
+       {modelo}
+      \umlclass[type=abstract]{Producto}{
+         \# nombre : string \\
+         \# precio : float \\
+         - total : int \\
+      }{
+         + calcularIVA() : float \\
+         + getPrecio() : float
+      }
+      \umlclass[x=6, template={T, U}]{Catalogo}{
+         - elementos : T[] \\ - indice : U \\ capacidad : int
+      }{
+         + buscar(clave : U) : T % búsqueda lineal
+      }
+   \end{umlpackage}
+
+   \begin{umlpackage}[y=-6]{pedidos}
+      \umlclass[template={T,U}]{Pedido}
+      {
+         - lineas : int
+      }
+      {
+         + anadir(p : Producto) : void \\ + total() : float
+      }
+      \umlclass[x=6]{Cliente}{ - dni : string }{}
+   \end{umlpackage}
+\end{umlpackage}
+
+\umlclass[y=-12]{Factura}{}{
+   + generar(p : Pedido) : Factura
+}
+
+% Relaciones
+\umlrelationship[type={unidirectional composition}, mult=1..*]{Pedido}{Producto}
+\umlrelationship[mult=0..*, type = aggregation]{Catalogo}{Producto}
+\umlrelationship[type=dependency]{Factura}{Pedido}
+\umlrelationship[geometry=-|, type=unidirectional association,
+                 arg1=cliente, mult1=1]{Pedido}{Cliente}
+\umlrelationship[type=import]{pedidos}{modelo}
+\end{tikzpicture}
+
+
+\begin{verbatim}
+% Ojo esto está dentro de un verbatim debería ignorarse
+\begin{tikzpicture}
+\begin{umlpackage}{abuelo}
+   \begin{umlpackage}
+       [x=0,
+        y=0]
+       {padre}
+
+        \begin{umlpackage}{hijo}
+            \umlclass[x=6]{Test}{ - attribute : string }{}
+        \end{umlpackage}
+
+   \end{umlpackage}
+
+\end{umlpackage}
+\end{tikzpicture}
+\end{verbatim}
+
+\end{document}
