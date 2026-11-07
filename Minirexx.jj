@@ -191,3 +191,53 @@ void bucle(): {}
 	<DO> ( bucleWhile() | bucleUntil() | bucleContador() )
 }
 
+void bucleWhile(): {String lblIni= nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
+{
+	<WHILE> 	{ etiqueta(lblIni);}
+	condicion()	{ emite("sifalsovea " + lblFin);}
+	sentencias() <END>	{emite("vea " + lblIni);
+					etiqueta(lblFin);}
+}
+
+void bucleUntil(): {String llCond = nuevaEtiqueta(), lblCuerpo = nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
+{
+	<UNTIL> 	{ emite("vea " + lblCuerpo);
+			 etiqueta(lblCuerpo);}
+	condicion()	{emite("siciertovea " + lblFin);
+			etiqueta(lblCuerpo);}
+	sentencia() <END>	{emite("vea" + lblCond);
+			etiqueta(lblFin);}
+}
+
+void bucleContador() : { Token id, paso;
+                         String v, operacion = "add";
+                         String lblIni = nuevaEtiqueta(    ), lblFin = nuevaEtiqueta(); }
+{
+     id = <ID> "="             { v = var(id);
+                                 emite("valori " + v); }
+     expresion()               { emite("asigna");
+                                 etiqueta(lblIni);
+                                 emite("valord " + v); }
+     <TO> expresion()          { emite("esmayor");
+                                emite("siciertovea " +     lblFin); }
+    (
+        <BY> [ <ADDING> | <SUBTRACTING> { operacion = "    sub"; } ]
+        paso = <NUM>          { if (Integer.parseInt(pa    so.image) == 0) {
+                                    System.err.println(    "Error semantico (linea "
+                                        + paso.beginLin    e + ", columna " + paso.beginColumn
+                                        + "): el valor     de BY debe ser distinto de cero");
+                                     System.exit(1);
+                              } }
+    |
+        /* sin BY */          { paso = null; }
+    )
+    sentencias() <END>        { emite("valori " + v);
+                                emite("valord " + v);
+                                emite("mete " + (paso =    = null ? "1" : paso.image));
+                                 emite(operacion);
+                                 emite("asigna");
+                                 emite("vea " + lblIni);
+                                 etiqueta(lblFin); }
+}
+
+/* Condiciones */
