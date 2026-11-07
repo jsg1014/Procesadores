@@ -157,4 +157,37 @@ void elementoSalida(): {TOKEN c;}
 void bloque(): {}
 {
 	<DO> sentencias() <END>
-}	
+}
+
+void condicional(): { String lblElse = nuevaEtiqueta(), lblFin;}
+{
+  <IF> condicion() <THEN>   { emite("sifalsovea " + l    blElse); }
+     bloque()
+     (
+         <ELSE>                { lblFin = nuevaEtiqueta(    );
+                                 emite("vea " + lblFin);
+                                 etiqueta(lblElse); }
+         bloque()              { etiqueta(lblFin); }
+     |
+         /* sin ELSE */        { etiqueta(lblElse); }
+     )
+ }
+
+void seleccion(): { String lblFin = nuevaEtiqueta();}
+{
+	<SELECT>
+	(clausulaWhen(lblFin) )+
+	[ <OTHERWISE> bloque() ] 
+	<END> 		{etiqueta(lblFin);}
+}
+
+void clausulaWhen(String lblFin): { String lblSig = nuevaEtiqueta();}
+{ 
+	<WHEN> condicion() <THEN> { emite ("sifalsovea " + lblSig);}
+	bloque() 	{emite("vea" + lblFin); etiqueta(lblSig);}
+
+void bucle(): {}
+{
+	<DO> ( bucleWhile() | bucleUntil() | bucleContador() )
+}
+
