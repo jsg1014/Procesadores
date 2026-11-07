@@ -1,0 +1,64 @@
+1 /*
+  2  * Práctica de JavaCC — Procesadores de Lenguajes 2026-27
+  3  * Mini-REXX: traductor a la máquina de pila abstracta.
+  4  *
+  5  * Compilación:  javacc MiniRexx.jj && javac *.java
+  6  * Uso:          java MiniRexx [fichero.rexx]   (sin argumento lee de stdin)
+  7  *
+  8  * El código se emite directamente en el orden en que se reconoce la entrada;
+  9  * no se usan variables auxiliares en el código intermedio, solo etiquetas.
+ 10  */
+ 11 
+ 12 options {
+ 13     STATIC      = false;
+ 14     IGNORE_CASE = true;     // palabras reservadas e identificadores sin distinción de mayúsculas
+ 15 }
+ 16 
+ 17 PARSER_BEGIN(MiniRexx)
+ 18 
+ 19 import java.io.*;
+ 20 
+ 21 public class MiniRexx {
+ 22 
+ 23     /** Contador para generar etiquetas únicas LBL0, LBL1, ... */
+ 24     private int numEtiqueta = 0;
+ 25 
+ 26     private String nuevaEtiqueta() {
+ 27         return "LBL" + (numEtiqueta++);
+ 28     }
+ 29 
+ 30     /** Emite una instrucción de la máquina de pila. */
+ 31     private void emite(String instr) {
+  	    System.out.println("\t" + instr);
+ 33     }
+ 34 
+ 35     /** Emite la definición de una etiqueta. */
+ 36     private void etiqueta(String lbl) {
+ 37         System.out.println(lbl + ":");
+ 38     }
+ 39 
+ 40     /** Los identificadores no distinguen mayúsculas: se normalizan a minúsculas. */
+ 41     private static String var(Token t) {
+ 42         return t.image.toLowerCase();
+ 43     }
+ 44 
+ 45     public static void main(String[] args) {
+ 46         try {
+ 47             InputStream in = (args.length == 0) ? System.in : new FileInputStream(args[0]);
+ 48             MiniRexx parser = new MiniRexx(in, "UTF-8");
+ 49             parser.programa();
+ 50         } catch (FileNotFoundException e) {
+ 51             System.err.println("Error: no se encuentra el fichero " + args[0]);
+ 52             System.exit(1);
+ 53         } catch (ParseException e) {
+ 54             System.err.println("Error sintactico: " + e.getMessage());
+                System.exit(1);
+ 56         } catch (TokenMgrError e) {
+ 57             System.err.println("Error lexico: " + e.getMessage());
+ 58             System.exit(1);
+ 59         }
+ 60     }
+ 61 }
+ 62 
+ 63 PARSER_END(MiniRexx)
+
