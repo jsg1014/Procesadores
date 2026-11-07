@@ -1,0 +1,51 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{tikz-uml}
+
+\begin{document}
+% Esto no es un diagrama: \begin{tikzpicture} \umlclass{X}{}{}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+   % Clase base
+   \umlclass{Vehiculo}{
+      % Atributos
+      - matricula : string \\
+      - velocidad : float
+   }{
+      + acelerar(v : float) : void \\
+      + frenar() : void \\
+      \# revisar() : bool
+   }
+
+   \umlclass[y=-4]{Coche}{
+      - puertas : int
+   }{
+      + abrirMaletero() : void
+   }
+
+   \umlclass[x=6]{Garaje}{
+      plazas : int \\ direccion : string \\ abierto : bool
+   }{}
+
+   \umlclass[x=6, y=-4]{Conductor}{nombre : string}{+ conducir() : void}
+
+   \umlrelationship[type=inheritance]{Coche}{Vehiculo}
+   \umlrelationship{Garaje}{Vehiculo} % sin tipo: asociación
+\end{tikzpicture}
+\caption{Un diagrama sencillo}
+\end{figure}
+
+\end{document}
+
+
+
+Todo lo que aparezca detrás del `\end{document}` se ignora.
+
+\begin{tikzpicture}
+  \begin{umlpackage}{ejemplo}
+    \umlclass{Ejemplo}{- x : int}{+ f() : void}  % comentario
+  \end{umlpackage}
+  \umlrelationship{Ejemplo}{Ejemplo}
+\end{tikzpicture}
