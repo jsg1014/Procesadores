@@ -110,4 +110,51 @@ TOKEN : {
 }
 
 /* Analisis sintactico y Traduccion */
+void programa() : {}
+{
+	sentencias() <EOF>
+}
 
+void sentencias() : {}
+{
+	( sentencia() )*
+}
+
+void sentencia(): {}
+{
+	asignacion()
+	| entrada()
+	| salida()
+	| condicional()
+	| seleccion()
+	| bucle()
+}
+
+void asignacion(): {TOKEN id;}
+{
+	id = <ID> "=" { emite( "valori" + var(id));
+}
+	expresion()	{emite("asigna");}
+}
+
+void entrada(): {TOKEN id;}
+{
+	<PULL> id = <ID> { emite ( "lee " + var(id));}
+|
+
+void salida(): {int n = 1;}
+{
+	<SAY> elementoSalida() ("," elementoSalida() { n ++
+;})*	{ emite ("print" + n);}
+}
+
+void elementoSalida(): {TOKEN c;}
+{
+	c = <CAD> 	{emite ("metecad " = c.image);}
+	| expresion()
+}
+
+void bloque(): {}
+{
+	<DO> sentencias() <END>
+}	
