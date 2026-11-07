@@ -241,3 +241,55 @@ void bucleContador() : { Token id, paso;
 }
 
 /* Condiciones */
+void condicion(): {String op;}
+{
+	expresion() [ op = relacional() expresion() { emite (op);} ]
+}
+
+String relacional(): {}
+{
+	"=" { return "esigual";}
+	| "<>" { return "esigual\n\tnot";}
+	| "<"	{ return "esmenor"; } 
+	| ">"	{ return "esmayor";}
+	| "<="	{ return " esmayor\n\tnot";}
+	| ">="	{ return "esmenor\n\tnot";}
+}
+
+/* Expresiones*/
+
+void expresion(): {}
+{
+	termino() ( "+" termino()	{ emite("add");}
+			| "-" termino()	{emite("sub");}
+}
+
+void termino(): {}
+{
+	factor() ( "*" factor()		{emite("mul");}
+		|	"/" factor()	{emite("div");}
+}
+
+void factor(): {}
+{
+	"-"	{emite("mete 0");} atomo()	{emite("sub");}
+	| "+"	atomo()
+	| atomo()
+}
+
+void atomo(): {TOKEN t;}
+{
+	t = <NUM>	{emite("mete " + t.image);}
+	| t = <ID>	{emite("valord " + var(t));}
+	| "(" expresion() ")"
+	| elegir()
+}
+
+void elegir(): { String lblFalso = nuevaEtiqueta(),lblFin= nuevaEtiqueta();}
+{
+	<CHOOSE> "(" condicion() ","	{emite("sifalsovea " + lblFalse;}
+	expresion() ","	{emite("vea " + lblFin);
+			etiqueta(lblFalso);}
+	expresion() ")"	{etiqueta(lblFin);}
+}
+
