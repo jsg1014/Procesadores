@@ -61,4 +61,53 @@
  61 }
  62 
  63 PARSER_END(MiniRexx)
+/* Analixis Lexico */
+
+// Espacios, tabuladores, salto de lineas y ;
+
+SKIP: { " " | "\t" | "\n" | "\r" | "\f" | ";" }
+
+// comentarios multilinea
+
+MORE : { " /* " : EN_COMENTARIOS}
+<EN_COMENTARIOS> SKIP : { "*/" : DEFAULT}
+<EN_COMENTARIOS> MORE : { < ~[] >}
+
+// palabras reservadas
+
+TOKEN :{
+
+	< PULL : "pull" > | <SAY : "say"> 
+	| < IF : "if" > | < THEN : "then">
+	| < ELSE : "else" > | < DO > : "do" >
+	| < END : "end" > | < WHILE : "while" >
+	| < UNTIL : "until"> | < TO : "to">
+	| < TO: "to" > | < BY : "by" >
+	| < SELECT : "select" > | < WHEN : "when" >
+	| < OTHERWISE : "otherwise" > | < CHOOSE : "choose">
+	| < ADDING : "adding" > | < SUBTRACTING : "subtracting" >
+}
+
+// operadores y signos de puntuacion
+
+TOKEN : { 
+	< ASIG_IGUAL: "=" > | < DISTINTO: "<>" 
+	| < MENOR: "<" > | < MAYOR: ">" > 
+	| < MENOR_IGUAL: "<=" > | < MAYOR_IGUAL: ">=">
+	| < MAS: "+" > | < MENOS: "-">
+	| < POR: "*" > | < DIVISION: "/">
+	| < PARENTESIS_ABIERTO: "(" > | < PARENTESIS_CIERRE: ")" >
+	| < COMA: "," >
+}
+
+
+// identificadores,numeros y cadenas
+
+TOKEN : {
+	< ID: ( <LETRA> | "_" ) ( <LETRA> | <DIGITO> | "_")* >
+	| < NUM: (<DIGITO>)+ >
+	| < CADENA: "\"" ( ~["\"" , "\n", "\r"] )* "\"" | "'" ( ~["'", "\n", "\r"] )* "'" >
+}
+
+/* Analisis sintactico y Traduccion */
 
