@@ -1,13 +1,14 @@
 /*
   2  * Práctica de JavaCC — Procesadores de Lenguajes 2026-27
   3  * Mini-REXX: traductor a la máquina de pila abstracta.
-  4  *
-  5  * Compilación:  javacc Minirexx.jj && javac *.java
-  6  * Uso:          java Minirexx [fichero.rexx]   (sin argumento lee de stdin)
-  7  *
-  8  * El código se emite directamente en el orden en que se reconoce la entrada;
-  9  * no se usan variables auxiliares en el código intermedio, solo etiquetas.
- 10  */ 
+  4  * Autor : Jairo Sanchez Gonzalez
+  5  * Fecha : 08/11/2026
+  6  * Compilación:  javacc Minirexx.jj && javac *.java
+  7  * Uso:          java Minirexx [fichero.rexx]   (sin argumento lee de stdin)
+  8  *
+  9  * El código se emite directamente en el orden en que se reconoce la entrada;
+  10  * no se usan variables auxiliares en el código intermedio, solo etiquetas.
+  11  */ 
  options {
      STATIC      = false;
      IGNORE_CASE = true;     // palabras reservadas e identificadores sin distinción de mayúsculas
