@@ -1,66 +1,64 @@
-1 /*
+/*
   2  * Práctica de JavaCC — Procesadores de Lenguajes 2026-27
   3  * Mini-REXX: traductor a la máquina de pila abstracta.
   4  *
-  5  * Compilación:  javacc MiniRexx.jj && javac *.java
-  6  * Uso:          java MiniRexx [fichero.rexx]   (sin argumento lee de stdin)
+  5  * Compilación:  javacc Minirexx.jj && javac *.java
+  6  * Uso:          java Minirexx [fichero.rexx]   (sin argumento lee de stdin)
   7  *
   8  * El código se emite directamente en el orden en que se reconoce la entrada;
   9  * no se usan variables auxiliares en el código intermedio, solo etiquetas.
- 10  */
- 11 
- 12 options {
- 13     STATIC      = false;
- 14     IGNORE_CASE = true;     // palabras reservadas e identificadores sin distinción de mayúsculas
- 15 }
- 16 
- 17 PARSER_BEGIN(MiniRexx)
- 18 
- 19 import java.io.*;
- 20 
- 21 public class MiniRexx {
- 22 
- 23     /** Contador para generar etiquetas únicas LBL0, LBL1, ... */
- 24     private int numEtiqueta = 0;
- 25 
- 26     private String nuevaEtiqueta() {
- 27         return "LBL" + (numEtiqueta++);
- 28     }
- 29 
- 30     /** Emite una instrucción de la máquina de pila. */
- 31     private void emite(String instr) {
-  	    System.out.println("\t" + instr);
- 33     }
- 34 
- 35     /** Emite la definición de una etiqueta. */
- 36     private void etiqueta(String lbl) {
- 37         System.out.println(lbl + ":");
- 38     }
- 39 
- 40     /** Los identificadores no distinguen mayúsculas: se normalizan a minúsculas. */
- 41     private static String var(Token t) {
- 42         return t.image.toLowerCase();
- 43     }
- 44 
- 45     public static void main(String[] args) {
- 46         try {
- 47             InputStream in = (args.length == 0) ? System.in : new FileInputStream(args[0]);
- 48             MiniRexx parser = new MiniRexx(in, "UTF-8");
- 49             parser.programa();
- 50         } catch (FileNotFoundException e) {
- 51             System.err.println("Error: no se encuentra el fichero " + args[0]);
- 52             System.exit(1);
- 53         } catch (ParseException e) {
- 54             System.err.println("Error sintactico: " + e.getMessage());
+ 10  */ 
+ options {
+     STATIC      = false;
+     IGNORE_CASE = true;     // palabras reservadas e identificadores sin distinción de mayúsculas
+ }
+ 
+ PARSER_BEGIN(Minirexx)
+ 
+ import java.io.*;
+  
+ public class Minirexx {
+ 
+ /** Contador para generar etiquetas únicas LBL0, LBL1, ... */
+     private int numEtiqueta = 0;
+     private String nuevaEtiqueta() {
+           return "LBL" + (numEtiqueta++);
+     }
+  
+      /** Emite una instrucción de la máquina de pila. */
+     private void emite(String instr) {
+ 	    System.out.println("\t" + instr);
+     }
+  
+      /** Emite la definición de una etiqueta. */
+      private void etiqueta(String lbl) {
+         System.out.println(lbl + ":");
+      }
+  
+      /** Los identificadores no distinguen mayúsculas: se normalizan a minúsculas. */
+      private static String var(Token t) {
+          return t.image.toLowerCase();
+      }
+  
+      public static void main(String[] args) {
+          try {
+              InputStream in = (args.length == 0) ? System.in : new FileInputStream(args[0]);
+              MiniRexx parser = new MiniRexx(in, "UTF-8");
+              parser.programa();
+          } catch (FileNotFoundException e) {
+              System.err.println("Error: no se encuentra el fichero " + args[0]);
+              System.exit(1);
+          } catch (ParseException e) {
+              System.err.println("Error sintactico: " + e.getMessage());
                 System.exit(1);
- 56         } catch (TokenMgrError e) {
- 57             System.err.println("Error lexico: " + e.getMessage());
- 58             System.exit(1);
- 59         }
- 60     }
- 61 }
- 62 
- 63 PARSER_END(MiniRexx)
+          } catch (TokenMgrError e) {
+              System.err.println("Error lexico: " + e.getMessage());
+              System.exit(1);
+          }
+      }
+ }
+ 
+ PARSER_END(Minirexx)
 /* Analixis Lexico */
 
 // Espacios, tabuladores, salto de lineas y ;
@@ -79,10 +77,10 @@ TOKEN :{
 
 	< PULL : "pull" > | <SAY : "say"> 
 	| < IF : "if" > | < THEN : "then">
-	| < ELSE : "else" > | < DO > : "do" >
+	| < ELSE : "else" > | < DO  : "do" >
 	| < END : "end" > | < WHILE : "while" >
 	| < UNTIL : "until"> | < TO : "to">
-	| < TO: "to" > | < BY : "by" >
+        | < BY : "by" >
 	| < SELECT : "select" > | < WHEN : "when" >
 	| < OTHERWISE : "otherwise" > | < CHOOSE : "choose">
 	| < ADDING : "adding" > | < SUBTRACTING : "subtracting" >
@@ -91,7 +89,7 @@ TOKEN :{
 // operadores y signos de puntuacion
 
 TOKEN : { 
-	< ASIG_IGUAL: "=" > | < DISTINTO: "<>" 
+	< ASIG_IGUAL: "=" > | < DISTINTO: "<>"> 
 	| < MENOR: "<" > | < MAYOR: ">" > 
 	| < MENOR_IGUAL: "<=" > | < MAYOR_IGUAL: ">=">
 	| < MAS: "+" > | < MENOS: "-">
@@ -107,6 +105,8 @@ TOKEN : {
 	< ID: ( <LETRA> | "_" ) ( <LETRA> | <DIGITO> | "_")* >
 	| < NUM: (<DIGITO>)+ >
 	| < CADENA: "\"" ( ~["\"" , "\n", "\r"] )* "\"" | "'" ( ~["'", "\n", "\r"] )* "'" >
+	| < #LETRA: ["a"-"z", "A"-"Z"] >
+	| < #DIGITO: ["1"-"9"] > 
 }
 
 /* Analisis sintactico y Traduccion */
@@ -130,27 +130,26 @@ void sentencia(): {}
 	| bucle()
 }
 
-void asignacion(): {TOKEN id;}
+void asignacion(): {Token id;}
 {
 	id = <ID> "=" { emite( "valori" + var(id));
 }
 	expresion()	{emite("asigna");}
 }
 
-void entrada(): {TOKEN id;}
+void entrada(): {Token id;}
 {
 	<PULL> id = <ID> { emite ( "lee " + var(id));}
-|
-
+}
 void salida(): {int n = 1;}
 {
 	<SAY> elementoSalida() ("," elementoSalida() { n ++
 ;})*	{ emite ("print" + n);}
 }
 
-void elementoSalida(): {TOKEN c;}
+void elementoSalida(): {Token c;}
 {
-	c = <CAD> 	{emite ("metecad " = c.image);}
+	c = <CADENA> 	{emite ("metecad " = c.image);}
 	| expresion()
 }
 
@@ -161,11 +160,11 @@ void bloque(): {}
 
 void condicional(): { String lblElse = nuevaEtiqueta(), lblFin;}
 {
-  <IF> condicion() <THEN>   { emite("sifalsovea " + l    blElse); }
+ <IF> condicion() <THEN>   { emite("sifalsovea " + lblElse); }
      bloque()
      (
-         <ELSE>                { lblFin = nuevaEtiqueta(    );
-                                 emite("vea " + lblFin);
+         <ELSE>                { lblFin = nuevaEtiqueta( );                                
+				 emite("vea " + lblFin);
                                  etiqueta(lblElse); }
          bloque()              { etiqueta(lblFin); }
      |
@@ -185,7 +184,7 @@ void clausulaWhen(String lblFin): { String lblSig = nuevaEtiqueta();}
 { 
 	<WHEN> condicion() <THEN> { emite ("sifalsovea " + lblSig);}
 	bloque() 	{emite("vea" + lblFin); etiqueta(lblSig);}
-
+}
 void bucle(): {}
 {
 	<DO> ( bucleWhile() | bucleUntil() | bucleContador() )
@@ -221,11 +220,11 @@ void bucleContador() : { Token id, paso;
      <TO> expresion()          { emite("esmayor");
                                 emite("siciertovea " +     lblFin); }
     (
-        <BY> [ <ADDING> | <SUBTRACTING> { operacion = "    sub"; } ]
-        paso = <NUM>          { if (Integer.parseInt(pa    so.image) == 0) {
-                                    System.err.println(    "Error semantico (linea "
-                                        + paso.beginLin    e + ", columna " + paso.beginColumn
-                                        + "): el valor     de BY debe ser distinto de cero");
+       <BY> [ <ADDING> | <SUBTRACTING> { operacion = " sub"; } ]
+        paso = <NUM>          { if (Integer.parseInt(paso.image) == 0) {
+                                    System.err.println("Error semantico (linea "
+                                        + paso.beginLine + ", columna " + paso.beginColumn
+                                        + "): el valor de BY debe ser distinto de cero");
                                      System.exit(1);
                               } }
     |
@@ -233,7 +232,7 @@ void bucleContador() : { Token id, paso;
     )
     sentencias() <END>        { emite("valori " + v);
                                 emite("valord " + v);
-                                emite("mete " + (paso =    = null ? "1" : paso.image));
+                                emite("mete " + (paso == null ? "1" : paso.image));
                                  emite(operacion);
                                  emite("asigna");
                                  emite("vea " + lblIni);
@@ -261,13 +260,13 @@ String relacional(): {}
 void expresion(): {}
 {
 	termino() ( "+" termino()	{ emite("add");}
-			| "-" termino()	{emite("sub");}
+			| "-" termino()	{emite("sub");})
 }
 
 void termino(): {}
 {
 	factor() ( "*" factor()		{emite("mul");}
-		|	"/" factor()	{emite("div");}
+		| "/" factor()	{emite("div");})
 }
 
 void factor(): {}
@@ -277,7 +276,7 @@ void factor(): {}
 	| atomo()
 }
 
-void atomo(): {TOKEN t;}
+void atomo(): {Token t;}
 {
 	t = <NUM>	{emite("mete " + t.image);}
 	| t = <ID>	{emite("valord " + var(t));}
@@ -287,7 +286,7 @@ void atomo(): {TOKEN t;}
 
 void elegir(): { String lblFalso = nuevaEtiqueta(),lblFin= nuevaEtiqueta();}
 {
-	<CHOOSE> "(" condicion() ","	{emite("sifalsovea " + lblFalse;}
+	<CHOOSE> "(" condicion() ","	{emite("sifalsovea " + lblFalse);}
 	expresion() ","	{emite("vea " + lblFin);
 			etiqueta(lblFalso);}
 	expresion() ")"	{etiqueta(lblFin);}
