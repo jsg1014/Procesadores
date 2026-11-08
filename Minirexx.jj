@@ -141,6 +141,7 @@ void entrada(): {Token id;}
 {
 	<PULL> id = <ID> { emite ( "lee " + var(id));}
 }
+
 void salida(): {int n = 1;}
 {
 	<SAY> elementoSalida() ("," elementoSalida() { n ++
@@ -157,7 +158,7 @@ void bloque(): {}
 {
 	<DO> sentencias() <END>
 }
-
+//Condicional del If mas condicion y consecuencia then bloque y Else bloque
 void condicional(): { String lblElse = nuevaEtiqueta(), lblFin;}
 {
  <IF> condicion() <THEN>   { emite("sifalsovea " + lblElse); }
@@ -185,11 +186,12 @@ void clausulaWhen(String lblFin): { String lblSig = nuevaEtiqueta();}
 	<WHEN> condicion() <THEN> { emite ("sifalsovea " + lblSig);}
 	bloque() 	{emite("vea" + lblFin); etiqueta(lblSig);}
 }
+// Como los tres bucles comienzan por Do hago una funcion en comun
 void bucle(): {}
 {
 	<DO> ( bucleWhile() | bucleUntil() | bucleContador() )
 }
-
+// Do while mas la condicion sentencia y END
 void bucleWhile(): {String lblIni= nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 {
 	<WHILE> 	{ etiqueta(lblIni);}
@@ -197,7 +199,8 @@ void bucleWhile(): {String lblIni= nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 	sentencias() <END>	{emite("vea " + lblIni);
 					etiqueta(lblFin);}
 }
-
+//Do until condicion sentencias END
+// La condicion se emite antes que el cuerpo, se entra saltando directamente al cuerpo y se vuelve a la condicion alfinal
 void bucleUntil(): {String lblCond = nuevaEtiqueta(), lblCuerpo = nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 {
 	<UNTIL> 	{ emite("vea " + lblCuerpo);
@@ -207,7 +210,7 @@ void bucleUntil(): {String lblCond = nuevaEtiqueta(), lblCuerpo = nuevaEtiqueta(
 	sentencia() <END>	{emite("vea " + lblCond);
 			etiqueta(lblFin);}
 }
-
+// El limite se reevalua antes de cada iteracion, se ejecuta el cuerpo mientras el contador sea menor o igual al limite.
 void bucleContador() : { Token id, paso;
                          String v, operacion = "add";
                          String lblIni = nuevaEtiqueta(    ), lblFin = nuevaEtiqueta(); }
@@ -240,11 +243,13 @@ void bucleContador() : { Token id, paso;
 }
 
 /* Condiciones */
+
+
 void condicion(): {String op;}
 {
 	expresion() [ op = relacional() expresion() { emite (op);} ]
 }
-
+// Devuelve la secuencia de instrucciones que implementa cada comparacion
 String relacional(): {}
 {
 	"=" { return "esigual";}
@@ -268,7 +273,7 @@ void termino(): {}
 	factor() ( "*" factor()		{emite("mul");}
 		| "/" factor()	{emite("div");})*
 }
-
+// El menos unario se traduce como 0 - atomo
 void factor(): {}
 {
 	"-"	{emite("mete 0");} atomo()	{emite("sub");}
@@ -283,7 +288,7 @@ void atomo(): {Token t;}
 	| "(" expresion() ")"
 	| elegir()
 }
-
+// CHOOSE es la condicion, e1,e2 y solo se evalua la rama elegida
 void elegir(): { String lblFalso = nuevaEtiqueta(),lblFin= nuevaEtiqueta();}
 {
 	<CHOOSE> "(" condicion() ","	{emite("sifalsovea " + lblFalso);}
