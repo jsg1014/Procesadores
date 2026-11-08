@@ -43,7 +43,7 @@
       public static void main(String[] args) {
           try {
               InputStream in = (args.length == 0) ? System.in : new FileInputStream(args[0]);
-              MiniRexx parser = new MiniRexx(in, "UTF-8");
+              Minirexx parser = new Minirexx(in, "UTF-8");
               parser.programa();
           } catch (FileNotFoundException e) {
               System.err.println("Error: no se encuentra el fichero " + args[0]);
@@ -67,7 +67,7 @@ SKIP: { " " | "\t" | "\n" | "\r" | "\f" | ";" }
 
 // comentarios multilinea
 
-MORE : { " /* " : EN_COMENTARIOS}
+MORE : { "/*" : EN_COMENTARIOS}
 <EN_COMENTARIOS> SKIP : { "*/" : DEFAULT}
 <EN_COMENTARIOS> MORE : { < ~[] >}
 
@@ -132,7 +132,7 @@ void sentencia(): {}
 
 void asignacion(): {Token id;}
 {
-	id = <ID> "=" { emite( "valori" + var(id));
+	id = <ID> "=" { emite( "valori " + var(id));
 }
 	expresion()	{emite("asigna");}
 }
@@ -144,12 +144,12 @@ void entrada(): {Token id;}
 void salida(): {int n = 1;}
 {
 	<SAY> elementoSalida() ("," elementoSalida() { n ++
-;})*	{ emite ("print" + n);}
+;})*	{ emite ("print " + n);}
 }
 
 void elementoSalida(): {Token c;}
 {
-	c = <CADENA> 	{emite ("metecad " = c.image);}
+	c = <CADENA> 	{emite ("metecad " + c.image);}
 	| expresion()
 }
 
@@ -198,13 +198,13 @@ void bucleWhile(): {String lblIni= nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 					etiqueta(lblFin);}
 }
 
-void bucleUntil(): {String llCond = nuevaEtiqueta(), lblCuerpo = nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
+void bucleUntil(): {String lblCond = nuevaEtiqueta(), lblCuerpo = nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 {
 	<UNTIL> 	{ emite("vea " + lblCuerpo);
 			 etiqueta(lblCuerpo);}
 	condicion()	{emite("siciertovea " + lblFin);
 			etiqueta(lblCuerpo);}
-	sentencia() <END>	{emite("vea" + lblCond);
+	sentencia() <END>	{emite("vea " + lblCond);
 			etiqueta(lblFin);}
 }
 
@@ -214,10 +214,10 @@ void bucleContador() : { Token id, paso;
 {
      id = <ID> "="             { v = var(id);
                                  emite("valori " + v); }
-     expresion()               { emite("asigna");
+     expresion()               { emite("asigna ");
                                  etiqueta(lblIni);
                                  emite("valord " + v); }
-     <TO> expresion()          { emite("esmayor");
+     <TO> expresion()          { emite("esmayor ");
                                 emite("siciertovea " +     lblFin); }
     (
        <BY> [ <ADDING> | <SUBTRACTING> { operacion = " sub"; } ]
@@ -260,13 +260,13 @@ String relacional(): {}
 void expresion(): {}
 {
 	termino() ( "+" termino()	{ emite("add");}
-			| "-" termino()	{emite("sub");})
+		   | "-" termino()	{emite("sub");})*
 }
 
 void termino(): {}
 {
 	factor() ( "*" factor()		{emite("mul");}
-		| "/" factor()	{emite("div");})
+		| "/" factor()	{emite("div");})*
 }
 
 void factor(): {}
@@ -286,7 +286,7 @@ void atomo(): {Token t;}
 
 void elegir(): { String lblFalso = nuevaEtiqueta(),lblFin= nuevaEtiqueta();}
 {
-	<CHOOSE> "(" condicion() ","	{emite("sifalsovea " + lblFalse);}
+	<CHOOSE> "(" condicion() ","	{emite("sifalsovea " + lblFalso);}
 	expresion() ","	{emite("vea " + lblFin);
 			etiqueta(lblFalso);}
 	expresion() ")"	{etiqueta(lblFin);}
