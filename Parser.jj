@@ -1,65 +1,64 @@
 /*
-  2  * Práctica de JavaCC — Procesadores de Lenguajes 2026-27
-  3  * Mini-REXX: traductor a la máquina de pila abstracta.
-  4  * Autor : Jairo Sanchez Gonzalez
-  5  * Fecha : 08/11/2026
-  6  * Compilación:  javacc Minirexx.jj && javac *.java
-  7  * Uso:          java Minirexx [fichero.rexx]   (sin argumento lee de stdin)
-  8  *
-  9  * El código se emite directamente en el orden en que se reconoce la entrada;
-  10  * no se usan variables auxiliares en el código intermedio, solo etiquetas.
-  11  */ 
- options {
-     STATIC      = false;
-     IGNORE_CASE = true;     // palabras reservadas e identificadores sin distinción de mayúsculas
- }
+ * Práctica de JavaCC — Procesadores de Lenguajes 2026-27
+ * Mini-REXX: traductor a la máquina de pila abstracta.
+ *
+ * Compilación:  javacc Parser.jj && javac *.java
+ * Uso:          java REXXCompiler [fichero.rexx]   (sin argumento lee de stdin)
+ *
+ * El código se emite directamente en el orden en que se reconoce la entrada;
+ * no se usan variables auxiliares en el código intermedio, solo etiquetas.
+ */ 
+options {
+    STATIC      = false;
+    IGNORE_CASE = true;     // palabras reservadas e identificadores sin distinción de mayúsculas
+}
+
+PARSER_BEGIN(REXXCompiler)
+
+import java.io.*;
  
- PARSER_BEGIN(Minirexx)
+public class REXXCompiler {
+
+/** Contador para generar etiquetas únicas LBL0, LBL1, ... */
+    private int numEtiqueta = 0;
+    private String nuevaEtiqueta() {
+          return "LBL" + (numEtiqueta++);
+    }
  
- import java.io.*;
-  
- public class Minirexx {
+     /** Emite una instrucción de la máquina de pila. */
+    private void emite(String instr) {
+	    System.out.println("\t" + instr);
+    }
  
- /** Contador para generar etiquetas únicas LBL0, LBL1, ... */
-     private int numEtiqueta = 0;
-     private String nuevaEtiqueta() {
-           return "LBL" + (numEtiqueta++);
+     /** Emite la definición de una etiqueta. */
+     private void etiqueta(String lbl) {
+        System.out.println(lbl + ":");
      }
-  
-      /** Emite una instrucción de la máquina de pila. */
-     private void emite(String instr) {
- 	    System.out.println("\t" + instr);
-     }
-  
-      /** Emite la definición de una etiqueta. */
-      private void etiqueta(String lbl) {
-         System.out.println(lbl + ":");
-      }
-  
-      /** Los identificadores no distinguen mayúsculas: se normalizan a minúsculas. */
-      private static String var(Token t) {
-          return t.image.toLowerCase();
-      }
-  
-      public static void main(String[] args) {
-          try {
-              InputStream in = (args.length == 0) ? System.in : new FileInputStream(args[0]);
-              Minirexx parser = new Minirexx(in, "UTF-8");
-              parser.programa();
-          } catch (FileNotFoundException e) {
-              System.err.println("Error: no se encuentra el fichero " + args[0]);
-              System.exit(1);
-          } catch (ParseException e) {
-              System.err.println("Error sintactico: " + e.getMessage());
-                System.exit(1);
-          } catch (TokenMgrError e) {
-              System.err.println("Error lexico: " + e.getMessage());
-              System.exit(1);
-          }
-      }
- }
  
- PARSER_END(Minirexx)
+     /** Los identificadores no distinguen mayúsculas: se normalizan a minúsculas. */
+     private static String var(Token t) {
+         return t.image.toLowerCase();
+     }
+ 
+     public static void main(String[] args) {
+         try {
+             InputStream in = (args.length == 0) ? System.in : new FileInputStream(args[0]);
+             REXXCompiler parser = new REXXCompiler(in, "UTF-8");
+             parser.programa();
+         } catch (FileNotFoundException e) {
+             System.err.println("Error: no se encuentra el fichero " + args[0]);
+             System.exit(1);
+         } catch (ParseException e) {
+             System.err.println("Error sintactico: " + e.getMessage());
+               System.exit(1);
+         } catch (TokenMgrError e) {
+             System.err.println("Error lexico: " + e.getMessage());
+             System.exit(1);
+         }
+     }
+}
+
+PARSER_END(REXXCompiler)
 /* Analixis Lexico */
 
 // Espacios, tabuladores, salto de lineas y ;
@@ -107,7 +106,7 @@ TOKEN : {
 	| < NUM: (<DIGITO>)+ >
 	| < CADENA: "\"" ( ~["\"" , "\n", "\r"] )* "\"" | "'" ( ~["'", "\n", "\r"] )* "'" >
 	| < #LETRA: ["a"-"z", "A"-"Z"] >
-	| < #DIGITO: ["1"-"9"] > 
+	| < #DIGITO: ["0"-"9"] > 
 }
 
 /* Analisis sintactico y Traduccion */
@@ -185,7 +184,7 @@ void seleccion(): { String lblFin = nuevaEtiqueta();}
 void clausulaWhen(String lblFin): { String lblSig = nuevaEtiqueta();}
 { 
 	<WHEN> condicion() <THEN> { emite ("sifalsovea " + lblSig);}
-	bloque() 	{emite("vea" + lblFin); etiqueta(lblSig);}
+	bloque() 	{emite("vea " + lblFin); etiqueta(lblSig);}
 }
 // Como los tres bucles comienzan por Do hago una funcion en comun
 void bucle(): {}
@@ -205,10 +204,10 @@ void bucleWhile(): {String lblIni= nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 void bucleUntil(): {String lblCond = nuevaEtiqueta(), lblCuerpo = nuevaEtiqueta(), lblFin = nuevaEtiqueta();}
 {
 	<UNTIL> 	{ emite("vea " + lblCuerpo);
-			 etiqueta(lblCuerpo);}
+			 etiqueta(lblCond);}
 	condicion()	{emite("siciertovea " + lblFin);
 			etiqueta(lblCuerpo);}
-	sentencia() <END>	{emite("vea " + lblCond);
+	sentencias() <END>	{emite("vea " + lblCond);
 			etiqueta(lblFin);}
 }
 // El limite se reevalua antes de cada iteracion, se ejecuta el cuerpo mientras el contador sea menor o igual al limite.
@@ -218,13 +217,13 @@ void bucleContador() : { Token id, paso;
 {
      id = <ID> "="             { v = var(id);
                                  emite("valori " + v); }
-     expresion()               { emite("asigna ");
+     expresion()               { emite("asigna");
                                  etiqueta(lblIni);
                                  emite("valord " + v); }
-     <TO> expresion()          { emite("esmayor ");
+     <TO> expresion()          { emite("esmayor");
                                 emite("siciertovea " +     lblFin); }
     (
-       <BY> [ <ADDING> | <SUBTRACTING> { operacion = " sub"; } ]
+       <BY> [ <ADDING> | <SUBTRACTING> { operacion = "sub"; } ]
         paso = <NUM>          { if (Integer.parseInt(paso.image) == 0) {
                                     System.err.println("Error semantico (linea "
                                         + paso.beginLine + ", columna " + paso.beginColumn
@@ -257,7 +256,7 @@ String relacional(): {}
 	| "<>" { return "esigual\n\tnot";}
 	| "<"	{ return "esmenor"; } 
 	| ">"	{ return "esmayor";}
-	| "<="	{ return " esmayor\n\tnot";}
+	| "<="	{ return "esmayor\n\tnot";}
 	| ">="	{ return "esmenor\n\tnot";}
 }
 
